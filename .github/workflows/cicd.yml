@@ -1,0 +1,33 @@
+name: CICD Workflow
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: pip install google-api-python-client bs4 Pillow pytesseract tensorflow==2.3.1
+
+      - name: Run tests
+        run: python -m pytest src/
+
+      - name: Create gh-pages branch
+        uses: actions/create-github-release@v1
+        with:
+          commit_message: "build"
+          tag: github-pages
+      - name: Build HTML
+        run: python build_html.py src/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        env:
+          GH_PAGES_BRANCH: main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
